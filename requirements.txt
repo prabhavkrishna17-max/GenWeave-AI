@@ -1,0 +1,14 @@
+fastapi==0.115.2
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
+aiofiles==24.1.0
+httpx==0.27.2
+Pillow==11.0.0
+
+# Database (optional - for real-time database support)
+# Uncomment the one you want to use:
+# supabase==2.3.4
+# python-dotenv==1.0.0
+# psycopg2-binary==2.9.9  # For direct PostgreSQL
+# motor==3.3.2  # For MongoDB async driver
+
