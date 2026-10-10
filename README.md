@@ -1,99 +1,189 @@
-# GenWeave AI – Frontend
+# GenWeave AI
 
-Dark, production-ready Vite + React + Tailwind UI for the GenWeave AI material builder. Mirrors the provided inspiration screens with a hero landing page, multi-route experience, and a fully wired builder that polls the backend contract.
+> **Generative 3D Material Staging & AI Product Render Studio**  
+> A full-stack creative intelligence platform converting surface textures and natural language prompts into staged, photorealistic 3D product renders with asynchronous job queuing, real-time stage progress polling, and fine-grained material parameter controls.
 
-## Quick start
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React 18](https://img.shields.io/badge/React-18.3-61DAFB.svg?logo=react&logoColor=0A0F1D)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF.svg?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4.svg?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 
+---
+
+## 1. Project Overview & Value Proposition
+
+In physical product design and e-commerce staging, generating photorealistic marketing scenes for novel materials (timber, woven textile, hammered copper, ceramic) usually requires specialized 3D software (Blender, Maya) and manual UV mapping.
+
+**GenWeave AI** streamlines this into an intuitive, prompt-guided workflow:
+1. Creators upload raw surface textures or swatch photographs.
+2. They specify natural language scene prompts and material physics properties (grain scale, roughness, specular lighting).
+3. The platform processes the job asynchronously through a rendering pipeline with real-time stage feedback, generating low-latency thumbnails and final high-resolution staged product renders.
+
+---
+
+## 2. Project Status
+
+- **Status:** Full-Stack Architecture Prototype (Vite React UI + FastAPI Ingestion & Job Queue).
+- **Default Branch:** `main`.
+- **Modes:** Supports both standalone mocked UI simulation (`VITE_USE_MOCK=true`) and live backend API integration.
+
+---
+
+## 3. Architecture & Data Flow
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ GenWeave AI Frontend (React 18 + Vite + Tailwind CSS)        │
+│ • Material Swatch & Texture Upload Dropzone                  │
+│ • Dynamic Material Controls (Grain Scale, Lighting, Quality) │
+│ • Multi-Stage Progress Bar & Thumbnail Polling Stream        │
+└──────────────────────────────┬───────────────────────────────┘
+                               │ POST /api/generate (Multipart)
+                               ▼
+┌──────────────────────────────────────────────────────────────┐
+│ FastAPI Ingestion Server (main.py)                           │
+│ • Multipart File Validation & Temporary Texture Storage      │
+│ • Job Dispatch & UUID Assignment                             │
+│ • CORS Middleware (localhost:5173)                           │
+└──────────────────────────────┬───────────────────────────────┘
+                               │
+                               ▼
+┌──────────────────────────────────────────────────────────────┐
+│ Job Manager & Rendering Pipeline (services/)                 │
+│ • Stage Progression: Queued ──► Processing ──► Rendering ──► Done │
+│ • Static Asset Server (/static/results, /static/uploads)     │
+│ • Database Persistence (SQLite / Supabase / PostgreSQL)      │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 4. API Contract & Lifecycle
+
+The client communicates with the backend via four standardized contract endpoints:
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/generate` | Multipart upload: texture file, prompt, quality, and material settings. Returns `{ job_id, status }`. |
+| `GET` | `/api/status/{job_id}` | Polls current rendering stage (`queued`, `processing`, `rendering`, `done`), progress percentage, and preview thumbnails. |
+| `GET` | `/api/result/{job_id}` | Retrieves completed asset URLs (`final_images`, optional 3D `.glb` assets, metadata). |
+| `GET` | `/health` | Server heartbeat check returning `{"status": "ok"}`. |
+
+---
+
+## 5. Implemented Features
+
+- **Prompt + Texture Fusion:** Pair textual scene descriptions (*"Minimalist ceramic mug on wet slate"*) with uploaded high-resolution material swatches.
+- **Dynamic Physics Parameters:** Granular control over material attributes such as `grainScale`, `roughness`, and `specularIntensity`.
+- **Asynchronous Staging & Polling:** Frontend polls `/api/status/{job_id}` every 2 seconds, displaying low-resolution progressive thumbnails before final render delivery.
+- **Flexible Data Layer:** Database setup guides and configuration templates for SQLite, Supabase, and PostgreSQL persistence.
+- **Built-in Mock Server:** Zero-backend developer preview mode enabled via `VITE_USE_MOCK=true`.
+
+---
+
+## 6. Technology Stack
+
+### Backend
+- **Framework:** FastAPI (`0.115.2`), Uvicorn (`0.32.0`)
+- **File & Image Processing:** Python-Multipart (`0.0.12`), Pillow (`11.0.0`), aiofiles (`24.1.0`), HTTPX (`0.27.2`)
+- **Database Adapters:** Supported for SQLite, PostgreSQL (`psycopg2-binary`), and Supabase (`supabase-py`)
+
+### Frontend
+- **Framework:** React 18 (`18.3.1`), Vite (`5.4.10`)
+- **Styling:** Tailwind CSS (`3.4.14`), PostCSS, Autoprefixer
+- **Icons & Animation:** Lucide React (`0.454.0`), CSS Keyframe Animations
+
+---
+
+## 7. Prerequisites
+
+- Python 3.10 or higher
+- Node.js 18.x or higher
+- npm or yarn
+
+---
+
+## 8. Installation & Setup
+
+### 1. Clone Repository
 ```bash
-cd frontend
+git clone https://github.com/prabhavkrishna17-max/GenWeave-AI.git
+cd GenWeave-AI
+```
+
+### 2. Frontend Setup
+```bash
 npm install
-# Optional: enable mock APIs
-cp .env.example .env.local
-# edit .env.local and set VITE_USE_MOCK=true
+```
+
+### 3. Backend Setup
+```bash
+python -m venv venv
+
+# Windows PowerShell
+venv\Scripts\Activate.ps1
+# macOS / Linux
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+---
+
+## 9. Running the Application
+
+### Option A: Running with Standalone Mock Server (Fast Preview)
+Create or edit `.env.local`:
+```ini
+VITE_USE_MOCK=true
+VITE_BACKEND_BASE_URL=http://localhost:4000
+```
+Start Vite:
+```bash
 npm run dev
 ```
+Navigate to `http://localhost:5173` to explore the builder with simulated job stages.
 
-Visit `http://localhost:5173`.
+### Option B: Running with Live FastAPI Backend
+1. Start the FastAPI server:
+   ```bash
+   python main.py
+   ```
+   The backend starts at `http://localhost:4000` (or `8000`).
+2. Verify backend health:
+   ```bash
+   node check-backend.js
+   ```
+3. Set frontend `.env.local`:
+   ```ini
+   VITE_USE_MOCK=false
+   VITE_BACKEND_BASE_URL=http://localhost:4000
+   ```
+4. Start the frontend:
+   ```bash
+   npm run dev
+   ```
 
-## Environment variables
+---
 
-| Name | Default | Purpose |
-| --- | --- | --- |
-| `VITE_BACKEND_BASE_URL` | `http://localhost:4000` | Base URL for all fetch calls |
-| `VITE_USE_MOCK` | `false` | When `true`, `src/mockServer.js` intercepts fetch and simulates /api/* |
+## 10. Database Configuration (Optional)
 
-Set variables in `.env.local`. Restart Vite after changes.
+For production state storage, see our dedicated guides:
+- [QUICKSTART.md](QUICKSTART.md) — Rapid onboarding instructions.
+- [DATABASE_SETUP.md](DATABASE_SETUP.md) — Comprehensive schema setup for Supabase and PostgreSQL.
+- [MIGRATE_TO_DATABASE.md](MIGRATE_TO_DATABASE.md) — Migrating in-memory job dictionaries to relational tables.
 
-## API contract wiring
+---
 
-All requests live in `src/utils/api.js`. They hit the backend contract described by the product brief:
+## 11. Known Limitations
 
-1. `POST /api/generate` (multipart form-data) → returns `{ job_id, status }`
-2. `GET /api/status/:job_id` → returns `{ job_id, stage, progress, thumbnails }`
-3. `GET /api/result/:job_id` → returns `{ job_id, final_images, glb?, metadata }`
-4. `GET /api/projects` (optional gallery preload)
+- **Compute Backend:** In lightweight local setups, final rendering generates staged composites; coupling to distributed GPU rendering clusters requires external worker queues (Celery/Redis).
+- **3D Meshes:** Output format is currently optimized for multi-angle 2D photorealistic renders; full `.glb` / `.gltf` mesh baking is on the roadmap.
 
-Builder flow:
+---
 
-1. User selects prompt, texture, settings.
-2. `createJob` uploads the payload and stores `job_id`.
-3. Poll `getJobStatus` every 2s until `stage === 'done'` or `'error'`.
-4. Fetch results via `getJobResult`, update preview + download buttons.
+## 12. Contributor Credits
 
-> TODO markers inside `api.js` specify where backend engineers swap the mock base URL, auth headers, or CORS handling.
-
-## Mock server
-
-- `VITE_USE_MOCK=true` enables `src/mockServer.js`, overriding `window.fetch`.
-- Mock server simulates stage progression, low-res thumbnails, and final renders using Unsplash placeholders plus `src/assets/sample-wood.png`.
-- Disable mocks by omitting the env var and pointing `VITE_BACKEND_BASE_URL` at the real backend.
-
-## Example requests
-
-```bash
-curl -X POST $BACKEND_BASE_URL/api/generate \
-  -F "prompt=Rustic mug hero render" \
-  -F "quality=balanced" \
-  -F "settings={\"grainScale\":48}" \
-  -F "texture=@./sample.png"
-
-curl $BACKEND_BASE_URL/api/status/<job_id>
-curl $BACKEND_BASE_URL/api/result/<job_id>
-```
-
-## CORS reminder
-
-Enable CORS on the backend for `http://localhost:5173` (Vite dev origin). Include credentials if auth cookies are required:
-
-```ts
-res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-res.header('Access-Control-Allow-Credentials', 'true');
-```
-
-## Folder structure
-
-```
-frontend/
-├─ public/            # Vite entry HTML (fonts + root)
-├─ src/
-│  ├─ components/     # UI atoms and molecules
-│  ├─ routes/         # Router views (Home / Builder / Gallery / Docs)
-│  ├─ utils/          # API + constants
-│  ├─ assets/         # Sample textures
-│  └─ mockServer.js   # Optional mock fetch layer
-└─ README.md
-```
-
-## Design cues
-
-- Slightly dark gradients, glass panels, neon accents (#A3E635 + #FF8A00).
-- Hero layout, card spacing, and typography inspired directly by `/mnt/data/717559f5-d399-4d3e-b1a6-286b564976a0.png` and `/mnt/data/Screenshot 2025-11-20 141323.png`.
-
-## Swapping in the real backend
-
-1. Ensure backend exposes the listed endpoints and accepts multipart file uploads for `/api/generate`.
-2. Set `VITE_BACKEND_BASE_URL`.
-3. Remove `VITE_USE_MOCK` env var (or set to `false`).
-4. Restart `npm run dev`.
-5. Verify builder flow end-to-end.
-
+- **Prabhav Krishna R** ([@prabhavkrishna17-max](https://github.com/prabhavkrishna17-max)) — Full-stack system architecture, frontend material builder, FastAPI job coordination.
